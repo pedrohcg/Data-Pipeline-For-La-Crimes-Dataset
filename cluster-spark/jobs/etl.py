@@ -35,18 +35,20 @@ df2 = spark.read.format("jdbc") \
 df = df.withColumn('Date_Rptd_clean', to_date(split(regexp_replace('Date_Rptd', '/', '-'), ' ').getItem(0), 'MM-dd-yyyy'))
 df = df.withColumn('Date_OCC_clean', to_date(split(regexp_replace('Date_OCC', '/', '-'), ' ').getItem(0), 'MM-dd-yyyy'))
 
-# Transforms the mocodes string into an array
-#df = df.withColumn('Mocodes_array', split(trim(col('Mocodes')), ' '))
-
 # creates a new dataframe with area data
 df_area = df.select('Area', 'Area_Name').distinct()
 
-print(f"df_area.count:{df_area.count()}")
+df_area.show()
 
 # creates a new dataframe with only the id and description of a crime
 df_crimes = df.select('Crm_Cd', 'Crm_Cd_Desc').distinct()
 
-print(f"df_crimes.count{df_crimes.count()}")
+df_crimes.show()
+
+# creates a new dataframe with all the crime codes from an occurence
+df_crimes_list = df.select('DR_NO', 'Crm_Cd', 'Crm_Cd_2', 'Crm_Cd_3', 'Crm_Cd_4')
+
+df_crimes_list.show()
 
 # creates a new dataframe with victims data
 df_victims = df.select('DR_NO', 'Vict_Age', 'Vict_Sex', 'Vict_Descent')
@@ -125,10 +127,9 @@ df_location = df.select('DR_NO', 'Area', 'Location', 'Cross_Street', 'Premis_Cd'
 df_location.show()
 
 # Drop columns from original dataframe
-df = df.drop('Date_Rptd', 'Date_OCC', 'Area', 'Area_Name', 'Crm_Cd_Desc', 'Vict_Age', 'Vict_Sex', 'Vict_Descent', 'Premis_Cd', 'Premis_Desc', 'Weapon_Desc', 'Status_Desc', 'Crm_Cd_1', 'Location', 'Cross_Street', 'LAT', 'LON')
+df = df.drop('Date_Rptd', 'Date_OCC', 'Area', 'Area_Name', 'Crm_Cd', 'Crm_Cd_Desc', 'Mocodes', 'Vict_Age', 'Vict_Sex', 'Vict_Descent', 'Premis_Cd', 'Premis_Desc', 'Weapon_Desc', 'Status_Desc', 'Crm_Cd_1', 'Crm_Cd_2', 'Crm_Cd_3', 'Crm_Cd_4', 'Location', 'Cross_Street', 'LAT', 'LON')
 
 df.show()
-print(df.schema)
 df2.show()
 
 # write the files on hadoop
@@ -136,6 +137,7 @@ df.write.mode('overwrite').option("header", "true").csv('transformed_data/crimes
 df2.write.mode('overwrite').option("header", "true").csv('transformed_data/mocodes_desc')
 df_area.write.mode('overwrite').option("header", "true").csv('transformed_data/areas')
 df_crimes.write.mode('overwrite').option("header", "true").csv('transformed_data/crimes')
+df_crimes_list.write.mode('overwrite').option("header", "true").csv('transformed_data/crimes_list')
 df_victims.write.mode('overwrite').option("header", "true").csv('transformed_data/victmis')
 df_mocodes_crimes.write.mode('overwrite').option("header", "true").csv('transformed_data/mocodes_crimes')
 df_descent.write.mode('overwrite').option("header", "true").csv('transformed_data/descent')

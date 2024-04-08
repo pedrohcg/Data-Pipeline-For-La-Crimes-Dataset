@@ -1,2 +1,3 @@
 /cluster-spark/data/*.csv
 /cluster-spark/data/*.bak
+/cluster-spark/jobs/transformed_data

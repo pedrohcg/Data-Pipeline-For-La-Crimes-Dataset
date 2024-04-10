@@ -1,1 +1,1 @@
-![alt text](/prints/datawarehouse-diagram.png)
+![alt text](/prints/datawarehouse-diagram-new.png)

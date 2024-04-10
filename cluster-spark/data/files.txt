@@ -1,0 +1,13 @@
+./data/transformed_data/areas/part-00000-1a4434e8-0a55-4fcb-aa65-843aebefed52-c000.csv
+./data/transformed_data/crimes/part-00000-f2dac635-7a7d-448c-a1f3-3c8648f9e5fb-c000.csv
+./data/transformed_data/crimes_date/part-00000-faacaa4f-7d71-4765-b08c-f2d9edcfc8fe-c000.csv
+./data/transformed_data/crimes_la/part-00000-8bd7d5c4-ace8-42e6-a038-fe0825931809-c000.csv
+./data/transformed_data/crimes_list/part-00000-b967cac8-533d-45df-9c55-1ee6aa98d1e8-c000.csv
+./data/transformed_data/descent/part-00000-770e21b3-9da8-4032-886f-10d0d5e180f4-c000.csv
+./data/transformed_data/location/part-00000-636cbebd-baf5-4c13-a63f-edcc1f2a7f8f-c000.csv
+./data/transformed_data/mocodes_crimes/part-00000-bdd4a271-297f-4c45-b2cd-c68efdc88bd8-c000.csv
+./data/transformed_data/mocodes_desc/part-00000-206c95cb-b62a-48d0-95c7-b89ea142a157-c000.csv
+./data/transformed_data/premis/part-00000-e380fb78-e233-487f-88ff-39ab88cf9c4d-c000.csv
+./data/transformed_data/status/part-00000-100df553-c65c-4f57-bca2-2f34e9878d64-c000.csv
+./data/transformed_data/victmis/part-00000-98d2b342-57f4-47ed-8bcd-5a4c0acdd00a-c000.csv
+./data/transformed_data/weapons/part-00000-da836588-8480-4a50-9802-76eadfa35f35-c000.csv

@@ -87,6 +87,7 @@ COPY ssh/ssh_config ~/.ssh/configuracao
 COPY data/mssql-jdbc-12.6.1.jre11.jar ./jars/
 
 COPY entrypoint.sh .
+COPY pipeline.sh .
 
 RUN chmod +x entrypoint.sh
 

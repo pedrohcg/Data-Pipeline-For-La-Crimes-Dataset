@@ -62,7 +62,7 @@ resource "google_bigquery_table" "Status" {
     schema = jsonencode([
         {
             "name": "id",
-            "type": "INTEGER",
+            "type": "STRING",
             "mode": "REQUIRED"
         },
         {
@@ -76,7 +76,7 @@ resource "google_bigquery_table" "Status" {
 resource "google_bigquery_table" "Crime_Date" {
     deletion_protection = false
     dataset_id = google_bigquery_dataset.crimes_la.dataset_id
-    table_id = "Crime_Date"
+    table_id = "Crimes_Date"
 
     schema = jsonencode([
         {
@@ -85,13 +85,13 @@ resource "google_bigquery_table" "Crime_Date" {
             "mode": "REQUIRED"
         },
         {
-            "name": "datetime_occ",
-            "type": "TIMESTAMP",
+            "name": "date_rpt",
+            "type": "DATE",
             "mode": "REQUIRED"
         },
         {
-            "name": "date_rpt",
-            "type": "DATE",
+            "name": "datetime_occ",
+            "type": "TIMESTAMP",
             "mode": "REQUIRED"
         }
     ])
@@ -232,7 +232,7 @@ resource "google_bigquery_table" "Mocodes" {
 resource "google_bigquery_table" "Locations" {
     deletion_protection = false
     dataset_id = google_bigquery_dataset.crimes_la.dataset_id
-    table_id = "Locations"
+    table_id = "Location"
 
     schema = jsonencode([
         {
@@ -246,11 +246,6 @@ resource "google_bigquery_table" "Locations" {
             "mode": "REQUIRED"
         },
         {
-            "name": "premis_id",
-            "type": "INTEGER",
-            "mode": "REQUIRED"
-        },
-        {
             "name": "location",
             "type": "STRING",
             "mode": "REQUIRED"
@@ -259,6 +254,11 @@ resource "google_bigquery_table" "Locations" {
             "name": "cross_street",
             "type": "STRING",
             "mode": "NULLABLE"
+        },
+        {
+            "name": "premis_id",
+            "type": "INTEGER",
+            "mode": "REQUIRED"
         },
         {
             "name": "lat",
@@ -381,4 +381,54 @@ resource "google_bigquery_table" "Weapons" {
             "mode": "REQUIRED"
         }
     ])
+}
+
+locals {
+    table_id = tomap({
+        "crimes_la" = google_bigquery_table.crimes_la.table_id,
+        "status" = google_bigquery_table.Status.table_id,
+        "crimes_date" = google_bigquery_table.Crime_Date.table_id,
+        "victims" = google_bigquery_table.Victims.table_id,
+        "descent" = google_bigquery_table.Victim_Descent.table_id,
+        "mocodes_crimes" = google_bigquery_table.Mocodes_Crimes.table_id,
+        "mocodes_desc" = google_bigquery_table.Mocodes.table_id,
+        "location" = google_bigquery_table.Locations.table_id,
+        "areas" = google_bigquery_table.Areas.table_id,
+        "premis" = google_bigquery_table.Premisses.table_id,
+        "crimes_list" = google_bigquery_table.Crimes_List.table_id,
+        "crimes" = google_bigquery_table.Crimes.table_id,
+        "weapons" = google_bigquery_table.Weapons.table_id
+    })
+}
+
+resource "random_string" "random_id" {
+    length = 8
+    special = false
+    upper = false
+}
+
+# Loads data from bucket to BigQuery table
+resource "google_bigquery_job" "job_sql_1" {
+    for_each = toset(split("\n", file("../data/files.txt")))
+    job_id = "load_job_${random_string.random_id.result}_${split("/", each.value)[3]}"
+    # Waits the upload to finish
+    depends_on = [google_storage_bucket_object.data_folder]
+
+    labels = {
+        "job" = "job_load"
+    }
+
+    load {
+        source_uris = ["gs://bucket-dw-modeling-pedro/${trim(each.value, "./")}",]
+
+        destination_table {
+            project_id = "dw-lab1-dsa"
+            dataset_id = google_bigquery_dataset.crimes_la.dataset_id
+            table_id = lookup(local.table_id, split("/", each.value)[3])
+        }
+
+        skip_leading_rows = 1
+        #schema_update_options = ["ALLOW_FIELD_RELAXATION", "ALLOW_FIELD_ADDITION"]
+        write_disposition = "WRITE_APPEND"
+    }
 }

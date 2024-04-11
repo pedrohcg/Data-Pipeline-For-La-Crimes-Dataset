@@ -40,7 +40,7 @@ df_date = df_date.withColumn('Date_Rptd', to_date(split(regexp_replace('Date_Rpt
     .withColumn('Time_OCC_minute', substring(col('Time_OCC'), 3, 4)) \
     .withColumn('DateTime_OCC', concat('Date_OCC', lit(' '), concat(col('Time_OCC_hour'), lit(":"), col('Time_OCC_minute'), lit(':00'))).cast("timestamp"))
 
-df_date = df_date.drop('Date_OCC', 'Time_OCC_hour', 'Time_OCC_minute')
+df_date = df_date.drop('Date_OCC', 'Time_OCC', 'Time_OCC_hour', 'Time_OCC_minute')
 
 df_date.show()
 
@@ -109,11 +109,14 @@ df_descent = df_descent.withColumn('Descent_Desc', when(df_descent.Vict_Descent 
 
 df_descent.show()
 
+#cleans premis data
+df = df.fillna({'Premis_Cd': 0, 'Premis_Desc': 'Unknown'})
+df = df.withColumn('Premis_Cd' , when(df.Premis_Desc == 'Unknown', 0)
+                                               .otherwise(df.Premis_Cd))
+
+
 # creates a new dataframe with premis data
 df_premis = df.select('Premis_Cd', 'Premis_Desc').distinct()
-
-# cleans premis data
-df_premis = df_premis.fillna({'Premis_Desc': 'Unknown'})
 
 df_premis.show()
 
@@ -135,6 +138,7 @@ df_location = df.select('DR_NO', 'Area', 'Location', 'Cross_Street', 'Premis_Cd'
 
 df_location.show()
 
+
 # Drop columns from original dataframe
 df = df.drop('Date_Rptd', 'Date_OCC', 'Time_OCC', 'Area', 'Area_Name', 'Crm_Cd', 'Crm_Cd_Desc', 'Mocodes', 'Vict_Age', 'Vict_Sex', 'Vict_Descent', 'Premis_Cd', 'Premis_Desc', 'Weapon_Desc', 'Status_Desc', 'Crm_Cd_1', 'Crm_Cd_2', 'Crm_Cd_3', 'Crm_Cd_4', 'Location', 'Cross_Street', 'LAT', 'LON')
 
@@ -148,7 +152,7 @@ df_date.write.mode('overwrite').option("header", "true").csv('transformed_data/c
 df_area.write.mode('overwrite').option("header", "true").csv('transformed_data/areas')
 df_crimes.write.mode('overwrite').option("header", "true").csv('transformed_data/crimes')
 df_crimes_list.write.mode('overwrite').option("header", "true").csv('transformed_data/crimes_list')
-df_victims.write.mode('overwrite').option("header", "true").csv('transformed_data/victmis')
+df_victims.write.mode('overwrite').option("header", "true").csv('transformed_data/victims')
 df_mocodes_crimes.write.mode('overwrite').option("header", "true").csv('transformed_data/mocodes_crimes')
 df_descent.write.mode('overwrite').option("header", "true").csv('transformed_data/descent')
 df_premis.write.mode('overwrite').option("header", "true").csv('transformed_data/premis')

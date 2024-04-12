@@ -3,11 +3,11 @@ from pyspark.sql.types import DateType
 from pyspark.sql.functions import when, col, regexp_replace, to_date, split, lit, substring, concat
 
 # Creates SparkSession
-spark = SparkSession.builder.appName("ETL").getOrCreate()
+spark = SparkSession.builder.appName("ETL2").getOrCreate()
 
 spark.sparkContext.setLogLevel('ERROR')
 
-database_ip = "172.29.0.2"
+database_ip = "172.24.0.2"
 database = "crimes_la"
 user = "spark_login"
 password = "senha12345_"

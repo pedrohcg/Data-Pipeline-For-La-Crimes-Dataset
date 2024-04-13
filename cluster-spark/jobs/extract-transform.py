@@ -1,13 +1,12 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.types import DateType
-from pyspark.sql.functions import when, col, regexp_replace, to_date, split, lit, substring, concat
+from pyspark.sql.functions import when, col, regexp_replace, to_date, split, lit, substring, concat, avg
 
 # Creates SparkSession
-spark = SparkSession.builder.appName("ETL2").getOrCreate()
+spark = SparkSession.builder.appName("ETL").getOrCreate()
 
 spark.sparkContext.setLogLevel('ERROR')
 
-database_ip = "172.24.0.2"
+database_ip = "172.21.0.9"
 database = "crimes_la"
 user = "spark_login"
 password = "senha12345_"
@@ -133,14 +132,30 @@ df_status = df.select('Status', 'Status_Desc').distinct()
 
 df_status.show()
 
-# creates a new dataframe with location data
-df_location = df.select('DR_NO', 'Area', 'Location', 'Cross_Street', 'Premis_Cd', 'LAT', 'LON')
+
+df.createOrReplaceTempView("location_temp")
+
+# creates a new dataframe with a select from the temporary view. We also clean the data of LAT and LON that were 0 replacing for the avg of the values of LAT and LON of the same location.
+# If the LAT and LON are still 0 after the cleaning it means there is not enough data in the dataset to guess their values
+df_location = spark.sql("""
+                        SELECT *
+                        FROM (
+                        SELECT DR_NO, Area, c.Location, Cross_Street, Premis_Cd, CASE WHEN LAT = 0 THEN COALESCE(AVG_LAT, 0) ELSE LAT END LAT, CASE WHEN LON = 0 THEN COALESCE(AVG_LON, 0) ELSE LON END LON
+                        FROM location_temp c
+                        LEFT JOIN (SELECT location, round(avg(lat), 4) avg_lat, round(avg(lon), 4) avg_lon FROM location_temp WHERE lat <> 0 GROUP BY location) d
+                        ON c.location = d.location
+                        )
+                    """)
+
+# changes the number of partitions of the dataframe to 1
+df_location = df_location.coalesce(1)
 
 df_location.show()
 
 
 # Drop columns from original dataframe
-df = df.drop('Date_Rptd', 'Date_OCC', 'Time_OCC', 'Area', 'Area_Name', 'Crm_Cd', 'Crm_Cd_Desc', 'Mocodes', 'Vict_Age', 'Vict_Sex', 'Vict_Descent', 'Premis_Cd', 'Premis_Desc', 'Weapon_Desc', 'Status_Desc', 'Crm_Cd_1', 'Crm_Cd_2', 'Crm_Cd_3', 'Crm_Cd_4', 'Location', 'Cross_Street', 'LAT', 'LON')
+df = df.drop('Date_Rptd', 'Rpt_Dist_No', 'Part_1_2', 'Date_OCC', 'Time_OCC', 'Area', 'Area_Name', 'Crm_Cd', 'Crm_Cd_Desc', 'Mocodes', 'Vict_Age', 'Vict_Sex', 'Vict_Descent',
+             'Premis_Cd', 'Premis_Desc', 'Weapon_Desc', 'Status_Desc', 'Crm_Cd_1', 'Crm_Cd_2', 'Crm_Cd_3', 'Crm_Cd_4', 'Location', 'Cross_Street', 'LAT', 'LON')
 
 df.show()
 df2.show()

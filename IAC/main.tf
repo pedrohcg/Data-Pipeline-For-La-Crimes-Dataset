@@ -32,16 +32,6 @@ resource "google_bigquery_table" "crimes_la" {
             "mode": "REQUIRED"
         },
         {
-            "name": "Rpt_Dist_No",
-            "type": "INTEGER",
-            "mode": "REQUIRED"
-        },
-        {
-            "name": "Part_1_2",
-            "type": "INTEGER",
-            "mode": "REQUIRED"
-        },
-        {
             "name": "Weapon_used_id",
             "type": "INTEGER",
             "mode": "NULLABLE"
@@ -262,12 +252,12 @@ resource "google_bigquery_table" "Locations" {
         },
         {
             "name": "lat",
-            "type": "FLOAT64",
+            "type": "NUMERIC",
             "mode": "REQUIRED"
         },
         {
             "name": "lon",
-            "type": "FLOAT64",
+            "type": "NUMERIC",
             "mode": "REQUIRED"
         },
     ])

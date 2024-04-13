@@ -43,11 +43,11 @@ CREATE TABLE mo_codes (
 
 /* INSERTS DATA */
 BULK INSERT crimes
-FROM '/project-files/cluster-spark/data/Crime_Data_from_2020_to_Present.csv'
+FROM '/src/Crime_Data_from_2020_to_Present.csv'
 WITH (FIELDTERMINATOR = ',', ROWTERMINATOR = '0x0a', FORMAT = 'CSV', FIRSTROW= 2);
 
 BULK INSERT mo_codes
-FROM '/project-files/cluster-spark/data/MO_CODES-MO_CODES_Numerical_20191119.csv'
+FROM '/src/MO_CODES-MO_CODES_Numerical_20191119.csv'
 WITH (FIELDTERMINATOR = ',', ROWTERMINATOR = '\r\n', FORMAT = 'CSV', FIRSTROW= 1);
 
 

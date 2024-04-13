@@ -33,4 +33,4 @@ As tecnologias utilizadas neste projeto foram:
  - [Terraform](https://www.terraform.io/)
 
 
-![alt text](/prints/datawarehouse-diagram-new.png)
+![alt text](/prints/datawarehouse-diagram.png)

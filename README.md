@@ -127,54 +127,54 @@ Com o Docker instalado e uma conta na GCP abra a linha de comando do seu sistema
 
 - Clone o repositório para o seu diretório local
 ```bash
-$ git clone https://github.com/pedrohcg/Data-Pipeline-For-La-Crimes-Dataset.git
+git clone https://github.com/pedrohcg/Data-Pipeline-For-La-Crimes-Dataset.git
 ```
 
 - Com o código fonte baixado vamos criar o cluster spark, para isso entre no diretório do projeto pela linha de comando e entre na pasta cluster-spark:
 ```bash
-$ cd cluster-spark
+cd cluster-spark
 ```
 
 - Então executamos o comando para criar o cluster. A quantidade de workers pode ser alterada na flag "scale", para esse projeto vou criar um cluster com 5 workers.
 ```bash
-$ docker-compose -f docker-compose.yml up -d --scale spark-worker-yarn=5
+docker-compose -f docker-compose.yml up -d --scale spark-worker-yarn=5
 ```
 
 - Com o cluster pronto temos que configurar o CLI do GCP no master do cluster, para isso temos que nos conectar ao master com o comando abaixo, porém também podemos nos conectar ao container diretamente pelo Docker Desktop:
 ```bash
-$ docker exec -it spark-master-yarn /bin/bash
+docker exec -it spark-master-yarn /bin/bash
 ```
 
 - Conectado no container vamos executar o comando abaixo e seguimos com os procedimentos de autenticação do Google. Obs: caso você tenha optado por se conectar ao master via linha de comando não se esqueça de sair do container antes de executar os próximos
 ```bash
-$ gcloud auth application-default login
+gcloud auth application-default login
 ```
 
 - Com o cluster pronto precisamos preparar o banco de dados, para isso vamos entrar na pasta scripts-database
 ```bash
-$ cd ../scripts-database
+cd ../scripts-database
 ```
 
 - Então temos que criar uma imagem para o container que vai rodar o banco de dados com o seguinte comando:
 ```bash
-$ docker build -t mssql-database-data-pipeline .
+docker build -t mssql-database-data-pipeline .
 ```
 
 - Depois vamos criar o container usando a imagem que acabamos de criar, também passamos a flag "network" para colocar a container na mesma network que o cluster spark para que assim seja possível a comunicação entre ambos. O banco de dados que vai ser criado com essa imagem já terá os dados do dataset importados caso eles tenham sido baixados e colocados na pasta scripts-database com antecedência.
 ```bash
-$ docker run -p 1433:1433 --name mssql2 --network cluster-yarn_default -d mssql-database-data-pipeline
+docker run -p 1433:1433 --name mssql2 --network cluster-yarn_default -d mssql-database-data-pipeline
 ```
 
 - Agora que já temos quase tudo pronto para executar a pipeline vamos verificar qual foi o ip que o docker atribuiu ao conteiner do banco
 ```bash
-$ docker network inspect cluster-yarn_default
+docker network inspect cluster-yarn_default
 ```
 
 - E então copiamos o valor do campo "IPv4Address" do container "mssql" e o substituimos no valor da variável "database_ip" no arquivo extract-transform.py que fica na pasta cluster-spark/jobs/
 
 - Com esses passos feitos só nos resta executar a pipeline, para isso executamos o seguinte comando:
 ```bash
-$ docker exec spark-master-yarn ./pipeline.sh
+docker exec spark-master-yarn ./pipeline.sh
 ```
 
 - Pronto! Agora você tem um DW na nuvem pronto para ser usado para análises.

@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import when, col, regexp_replace, to_date, split, lit, substring, concat, avg
+from pyspark.sql.functions import when, col, regexp_replace, to_date, split, lit, substring, concat, monotonically_increasing_id
 
 # Creates SparkSession
 spark = SparkSession.builder.appName("ETL").getOrCreate()
@@ -132,18 +132,31 @@ df_status = df.select('Status', 'Status_Desc').distinct()
 
 df_status.show()
 
+# creates a new dataframe for all distinct locations giving it an ID and its description
+df_location_desc = df.select('Location').distinct()
+
+# creates a incremental id for each of the locations
+df_location_desc = df_location_desc.withColumn('id', monotonically_increasing_id() + 1)
+
+# Changes the order of the columns
+df_location_desc = df_location_desc.select('id', 'Location')
+
+df_location_desc.show()
 
 df.createOrReplaceTempView("location_temp")
+df_location_desc.createOrReplaceTempView("location_desc_temp")
 
 # creates a new dataframe with a select from the temporary view. We also clean the data of LAT and LON that were 0 replacing for the avg of the values of LAT and LON of the same location.
 # If the LAT and LON are still 0 after the cleaning it means there is not enough data in the dataset to guess their values
 df_location = spark.sql("""
                         SELECT *
                         FROM (
-                        SELECT DR_NO, Area, c.Location, Cross_Street, Premis_Cd, CASE WHEN LAT = 0 THEN COALESCE(AVG_LAT, 0) ELSE LAT END LAT, CASE WHEN LON = 0 THEN COALESCE(AVG_LON, 0) ELSE LON END LON
-                        FROM location_temp c
-                        LEFT JOIN (SELECT location, round(avg(lat), 4) avg_lat, round(avg(lon), 4) avg_lon FROM location_temp WHERE lat <> 0 GROUP BY location) d
-                        ON c.location = d.location
+                        SELECT DR_NO, Area, ldt.id Location_Id, Cross_Street, Premis_Cd, CASE WHEN LAT = 0 THEN COALESCE(AVG_LAT, 0) ELSE LAT END LAT, CASE WHEN LON = 0 THEN COALESCE(AVG_LON, 0) ELSE LON END LON
+                        FROM location_temp lt
+                        LEFT JOIN (SELECT location, round(avg(lat), 4) avg_lat, round(avg(lon), 4) avg_lon FROM location_temp WHERE lat <> 0 GROUP BY location) sq
+                        ON lt.location = sq.location
+                        INNER JOIN location_desc_temp ldt
+                        ON lt.location = ldt.location
                         )
                     """)
 
@@ -174,3 +187,4 @@ df_premis.write.mode('overwrite').option("header", "true").csv('transformed_data
 df_weapons.write.mode('overwrite').option("header", "true").csv('transformed_data/weapons')
 df_status.write.mode('overwrite').option("header", "true").csv('transformed_data/status')
 df_location.write.mode('overwrite').option("header", "true").csv('transformed_data/location')
+df_location_desc.write.mode('overwrite').option("header", "true").csv('transformed_data/location_desc')

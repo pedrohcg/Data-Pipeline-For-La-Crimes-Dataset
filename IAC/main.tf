@@ -236,8 +236,8 @@ resource "google_bigquery_table" "Locations" {
             "mode": "REQUIRED"
         },
         {
-            "name": "location",
-            "type": "STRING",
+            "name": "location_id",
+            "type": "INTEGER",
             "mode": "REQUIRED"
         },
         {
@@ -260,6 +260,25 @@ resource "google_bigquery_table" "Locations" {
             "type": "NUMERIC",
             "mode": "REQUIRED"
         },
+    ])
+}
+
+resource "google_bigquery_table" "Location_Desc" {
+    deletion_protection = false
+    dataset_id = google_bigquery_dataset.crimes_la.dataset_id
+    table_id = "Location_Desc"
+
+    schema = jsonencode([
+        {
+            "name": "id",
+            "type": "INTEGER",
+            "mode": "REQUIRED"
+        },
+        {
+            "name": "description",
+            "type": "STRING",
+            "mode": "REQUIRED"
+        }
     ])
 }
 
@@ -383,6 +402,7 @@ locals {
         "mocodes_crimes" = google_bigquery_table.Mocodes_Crimes.table_id,
         "mocodes_desc" = google_bigquery_table.Mocodes.table_id,
         "location" = google_bigquery_table.Locations.table_id,
+        "location_desc" = google_bigquery_table.Location_Desc.id,
         "areas" = google_bigquery_table.Areas.table_id,
         "premis" = google_bigquery_table.Premisses.table_id,
         "crimes_list" = google_bigquery_table.Crimes_List.table_id,

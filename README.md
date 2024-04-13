@@ -11,14 +11,14 @@ O principal objetivo deste projeto é demonstrar minha capacidade de criar Pipel
 Além disso, outro objetivo importante deste projeto é responder as seguintes perguntas com análise de dados:
 
 - Qual foi a área com a maior quantidade de crimes de 2020 até março de 2024?
-- pergunta2
-- pergunta3
-- pergunta4
-- pergunta5
-- pergunta6
-- pergunta7
-- pergunta8
-- pergunta9
+- Qual o tipo de crime mais comum? E o menos comum?
+- Qual é o perfil de vítma que é mais afetado pelos crimes?
+- Qual foi o mês com a maior quantidade de crimes ocorridos?
+- Qual foi o mês com a maior quantidade de crimes reportados?
+- Qual é a divisão de vítimas por faixa etária?
+- Qual a porcentagem de crimes armados?
+- Quais vítimas podem ser consideradas como outliers?
+- Qual é a média móvel de crimes no mês de novembro de 2021?
 - pergunta10
 
 

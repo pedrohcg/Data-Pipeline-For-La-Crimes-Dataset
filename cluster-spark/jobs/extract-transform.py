@@ -6,7 +6,7 @@ spark = SparkSession.builder.appName("ETL").getOrCreate()
 
 spark.sparkContext.setLogLevel('ERROR')
 
-database_ip = "172.21.0.9"
+database_ip = "172.21.0.2"
 database = "crimes_la"
 user = "spark_login"
 password = "senha12345_"
@@ -123,7 +123,8 @@ df_premis.show()
 df_weapons = df.select('Weapon_Used_Cd', 'Weapon_Desc').distinct()
 
 # cleans weapon data
-df_weapons = df_weapons.fillna({'Weapon_Used_Cd': 0, 'Weapon_Desc': 'No Weapon Used'})
+df_weapons = df_weapons.fillna({'Weapon_Used_Cd': 500, 'Weapon_Desc': 'UNKNOWN WEAPON/OTHER WEAPON'})
+df = df.fillna({'Weapon_Used_Cd': 500})
 
 df_weapons.show()
 

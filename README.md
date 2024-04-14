@@ -10,17 +10,15 @@ O principal objetivo deste projeto é demonstrar minha capacidade de criar Pipel
 
 Além disso, outro objetivo importante deste projeto é responder as seguintes perguntas com análise de dados:
 
-- Qual foi a área com a maior quantidade de crimes de 2020 até março de 2024?
-- Qual o tipo de crime mais comum? E o menos comum?
-- Qual é o perfil de vítma que é mais afetado pelos crimes?
-- Qual foi o mês com a maior quantidade de crimes ocorridos?
-- Qual foi o mês com a maior quantidade de crimes reportados?
+- Qual a porcentagem de crimes que usaram armas de fogo ou brancas?
 - Qual é a divisão de vítimas por faixa etária?
-- Qual a porcentagem de crimes armados?
-- Quais vítimas podem ser consideradas como outliers?
+- Qual a arma mais comum de ser usada em crimes?
+- Qual foi a área com a maior quantidade de crimes de 2020 até março de 2024?
+- Qual é o perfil de vítma que é mais afetado pelos crimes?
+- Qual foi o mês com a maior quantidade de crimes reportados?
+- Quais foram os meses com a maior quantidade de crimes de cada ano? E os menores?
+- Qual o tipo de crime mais comum? E o menos comum?
 - Qual é a média móvel de crimes no mês de novembro de 2021?
-- pergunta10
-
 
 ## Tecnologias
 
@@ -73,6 +71,8 @@ A extração de dados é feita através de uma conexão JDBC com o banco de dado
 
 ## Limpeza e Transformação de Dados
 Vários processos de limpeza e transformação de dados foram aplicados na pipeline de dados, abaixo vou explicar em detalhes como cada um dos campos do dataset original foi tratado. Abaixo também temos um diagrama demonstrando como ficou o dataset após o processo.
+
+![dataset-img](./prints/datawarehouse-diagram-new.png)
 
 ### Campos de Data
 Os campos de data Date_Rpt foi tratado transformando-o de um campo no formato de MM/DD/YYYY HH:MM:SS para o formato YYYY-MM-DD, o descarte dos dados relacionados ao horário que o crime foi reportado se deve ao fato de que como não existe nenhum outro campo que consiga nos fornecer esses dados no dataset.

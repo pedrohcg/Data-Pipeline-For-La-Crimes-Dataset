@@ -1,5 +1,5 @@
 -- Qual a porcentagem de crimes que usaram armas de fogo ou brancas?
-SELECT ROUND(((SELECT COUNT(1) FROM `dw-lab1-dsa.crimes_la.Crimes_La` WHERE weapon_used_id NOT IN (500, 511, 400))/COUNT(1))*100) crimes_with_weapons_percentage
+SELECT ROUND(((SELECT COUNT(1) FROM `dw-lab1-dsa.crimes_la.Crimes_La` WHERE weapon_used_id NOT IN (500, 511, 400) and weapon_used_id IS NOT NULL)/COUNT(1))*100) crimes_with_weapons_percentage
 FROM `dw-lab1-dsa.crimes_la.Crimes_La`  
 
 -- Qual é a divisão de vítimas por faixa etária?

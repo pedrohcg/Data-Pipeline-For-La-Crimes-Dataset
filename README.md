@@ -111,7 +111,7 @@ Como existem diversas colunas com dados relacionados ao local do crime os dados 
 
 O outro dataframe que foi criado é o que vai armazenar as outras colunas relacionadas como: id da área, id da localização, Cross_Street, Premis_Cd, latitude e longitude. Dessas colunas é feito uma limpeza nos valores nulos de latitude e longitude, os valores nulos são substituidos pela média dos valores de outros crimes que ocorreram na mesma localização cujo valor não é zero. Em alguns casos não existe informação o suficiente para tentar aproximar os valores, nesses casos foi decidido que o valor continuaria a ser 0.
 
-## Campos Desnecessários
+### Campos Desnecessários
 Existem alguns campos que não apresentam nenhuma informação relevante para análise, os campos são: Rpt_Dist_No e Part_1_2. Esses campos foram descartados.
 
 ## Carga de Dados
@@ -179,4 +179,93 @@ docker exec spark-master-yarn ./pipeline.sh
 
 - Pronto! Agora você tem um DW na nuvem pronto para ser usado para análises.
 
-## Resultados
+## Respostas Para as Questões Propostas
+
+### Qual a porcentagem de crimes que usaram armas de fogo ou brancas?
+Para conseguir a resposta dessa pergunta a solução adotada foi utilizar uma subquery que faz uma contagem de todos os casos que usaram armas com exceção dos códigos 500, 511 e 400 que não representam armas de fogo nem armas brancas. O resultado da subquery é dividido pelo total de registros e multiplicado por 100 para conseguir a porcentagem.
+
+![query-1-img](./prints/resposta-1-query.png)
+
+O resultado da query é que temos 10% de crimes que usaram armas de fogo ou armas brancas.
+
+![resp-1-img](./prints/resposta-1.png)
+
+### Qual é a divisão de vítimas por faixa etária?
+Para descobrir a divisão de vítimas pela sua faixa etária foi feito um SELECT usando a função CASE, foram definidos intervalos de idade e comparados com as idades das vítimas agrupando-as e contando o valor total de cada intervalo. Os intervalos são de 10 anos, com execção do 70+ que agrupa todas as vítimas com mais de 70 anos. A query usada para chegar no resultado pode ser vista na imagem abaixo:
+
+![query-2-img](./prints/resposta-2-query.png)
+
+Na print abaixo podemos ver que a maioria das vítimas de crimes estão entre o intervalo de 20 a 30 anos e que o intervalo de 30 a 40 anos tem uma quantidade muito próxima de vítimas. Também é possível perceber que crianças entre 0 a 10 anos são, felizmente, os menos afetados.
+
+![resp-2-img](./prints/resposta-2.png)
+
+### Qual a arma mais comum de ser usada em crimes?
+Para descobrir qual é a arma mais usada em crimes é feito um SELECT trazendo a descrição, o id e a contagem da quantidade de vezes que determinada arma aparece no registro de um crime, também filtramos o resultado para que não mostre casos em que a arma é desconhecida. A query usada pode ser vista na imagem abaixo:
+
+![query-3-img](./prints/resposta-3-query.png)
+
+Podemos ver que a arma mais utilizada é a agressão física seguido de agressão verbal, porém nenhum dos dois pode ser considerado exatamente como uma arma então a resposta para a questão seria o terceiro registro, a pistola.
+
+![resp-3-img](./prints/resposta-3.png)
+
+### Qual foi a área com a maior quantidade de crimes de 2020 até março de 2024?
+Para descobrir qual a área com a maior quantidade de crimes precisamos primeiro selecionar registros das tabelas Crimes_La, Crimes_Date, Location e Areas para que assim seja possível relaizar uma contagem de todos os crimes, agrupar pela descrição da área na tabela Áreas e filtrar os registros de 2024 até 2024. A query utilizada pode ser vista abaixo:
+
+![query-4-img](./prints/resposta-4-query.png)
+
+Na imagem abaixo podemos ver que a área "Central" é a que ocorre a maior quantidade de crimes, seguido pela "77th Street" e "Pacific". Essas informações são importantes para que seja possível decidir quais área deve-se alocar mais recursos para evitar  maior quantidade de crimes possível.
+
+![resp-4-img](./prints/resposta-4.png)
+
+### Qual é o perfil de vítma que é mais afetado pelos crimes?
+Para descobrirmos o perfil da vítima vamos precisar de informações como sexo, descendência e quantiade de crimes. Para isso vamos usar as tabelas Crimes_la, Victims e Victims_Descent fazendo uma contagem de todos os crimes que aconteceram agrupando pelas colunas de sexo e descendência e filtrando casos em que os dados são desconhecidos, a query usada pode ser vista abaixo:
+
+![query-5-img](./prints/resposta-5-query.png)
+
+Como podemos ver, o perfil mais afetado pela violência são mulheres hispânicas, latinas ou mexicanas seguido por homens de mesma descendência
+
+![resp-5-img](./prints/resposta-5.png)
+
+### Qual foi o mês com a maior quantidade de crimes reportados?
+Para descobrir qual é o mês com a maior quantidade de crimes reportados vamos usar as tabelas Crimes_la e Crimes_Date, extraímos o valor de mês da coluna Date_Rpt e usamos a função CASE para transformar o valor numérico no nome do mês para facilitar a visualização e fazemos uma contagem de todos os crimes agrupando-os por mês e ano.
+
+![query-6-img](./prints/resposta-6-query.png)
+
+Como podemos ver na print abaixo o mês com a maior quantidade de crimes reportados foi maio de 2022. Também é possível perceber que o ano de 2022 foi um ano com muitos crimes, já que a maioria das resultados com a maior quantidade de crimes são de 2022.
+
+![resp-6-img](./prints/resposta-6.png)
+
+### Quais foram os meses com a maior quantidade de crimes de cada ano? E os menores?
+Para conseguir o resultado esperado foi criada uma CTE com a contagem de crimes agrupada por ano e mês e esses dados foram usados para criar um rank dos meses com a função RANK particionando o resultado por ano, podemos ver a solução na imagem abaixo
+
+![query-7-img](./prints/resposta-7-query.png)
+
+Com isso, é possível ver que os meses com a maior quantidade de crimes de 2020 até março de 2024 são junho em 2020, outubro em 2021, maio em 2022, agosto em 2023 e janeiro em 2024.
+
+![resp-7-1-img](./prints/resposta-7-1.png)
+
+Já para os meses com a menor quantidade de crimes temos abril de 2020, fevereiro de 2021, 2022 e 2023 como podemos ver na print abaixo. Como o dataset possui dados até março de 2024 então a posição do mês com menos crimes de 2024 será a posição 3, ou seja o mês de março como pode ser visto na print anterior.
+
+![resp-7-2-img](./prints/resposta-7-2.png)
+
+### Qual o tipo de crime mais comum? E o menos comum?
+Para descobrir qual o tipo de crime mais ou menos comum precisamos computar os valores de todos os crimes que podem ser cometidos em um crime, para isso precisamos utilizar a tabela Crimes_list que vai armazenar até quatro crimes cometidos pelo suspeito. Para conseguir computar todos esses crimes foram criadas 4 CTEs diferentes, cada uma calculando a soma de crimes para determinado código e levando a posição do crime (de mais grave para mais brando), ao fim o resultado das quatro CTEs é somado fazendo LEFT JOIN para os casos em que um crime que aparece no campo Crm_cd mas não aparece nos outros campos da lista. Também é usada a função COALESCE para validar em casos que um determinado código de crime não apareça em uma das outras colunas e seu valor seja nulo. A query completa pode ser visualizada abaixo
+
+![query-8-img](./prints/resposta-8-query.png)
+
+O crime mais comum é o de roubo de veículos com aproximadamente 100000 casos de 2020 até março de 2024
+
+![resp-8-1-img](./prints/resposta-8-1.png)
+
+Já o crime menos comum é o de sequestro de trem, com apenas um caso nesses 4 anos.
+
+![resp-8-2-img](./prints/resposta-8-2.png)
+
+### Qual é a média móvel de crimes no mês de novembro de 2021?
+Para calcular a média móvel vamos primeiro ter que calcular a quantidade de crimes que acontecem em um determinado dia, para isso é criada uma CTE que vai armazenar essa contagem. Após isso usamos uma função window para calcular o valor da média móvel levando em conta os 3 dias anteriores e os 3 dias posteriores, como é mostrado na print abaixo
+
+![query-9-img](./prints/resposta-9-query.png)
+
+A média móvel de crimes em todos os dias do mês de novembro de 2021 pode ser vista na print abaixo
+
+![resp-9-img](./prints/resposta-9.png)

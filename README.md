@@ -185,7 +185,7 @@ docker exec spark-master-yarn ./pipeline.sh
 Para conseguir a resposta dessa pergunta a solução adotada foi utilizar uma subquery que faz uma contagem de todos os casos que usaram armas com exceção dos códigos 500, 511 e 400 que não representam armas de fogo nem armas brancas. O resultado da subquery é dividido pelo total de registros e multiplicado por 100 para conseguir a porcentagem.
 
 <p align="center">
-    ![query-1-img](./prints/resposta-1-query.png)
+  <img src="./prints/resposta-1-query.png">
 </p>
 
 O resultado da query é que temos 10% de crimes que usaram armas de fogo ou armas brancas.

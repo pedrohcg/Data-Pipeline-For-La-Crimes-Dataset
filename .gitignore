@@ -4,4 +4,4 @@
 /IAC/.terraform/*
 /IAC/.terraform.lock.hcl
 /IAC/terraform.tfstate
-/IAC/terraform.tfstate.backupg
+/IAC/terraform.tfstate.backup

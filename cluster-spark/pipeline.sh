@@ -13,5 +13,7 @@ perl -p -i -e 'chomp if eof' ./data/files.txt
 
 cd IAC
 
+terraform init
+
 # Executes terraform script to create bigquery infrastructure
 terraform apply -auto-approve

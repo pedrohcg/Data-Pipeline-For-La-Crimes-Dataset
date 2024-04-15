@@ -1,3 +1,7 @@
 /scripts-database/Crime_Data_from_2020_to_Present.csv
 /cluster-spark/data/*.bak
 /cluster-spark/data/transformed_data
+/IAC/.terraform/*
+/IAC/.terraform.lock.hcl
+/IAC/terraform.tfstate
+/IAC/terraform.tfstate.backupg

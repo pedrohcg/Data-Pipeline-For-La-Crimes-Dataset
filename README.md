@@ -34,7 +34,9 @@ As tecnologias utilizadas neste projeto foram:
 ## Dataset
 O dataset usado neste projeto foi o [Crime Data from 2020 to Present] disponível no Kaggle e pode ser acessado nesse [link](https://www.kaggle.com/datasets/sahirmaharajj/crime-data-from-2020-to-present-updated-monthly/data). Abaixo temos um diagrama do dataset original:
 
-imagem-do-dataset-original.png
+<p align="center">
+  <img src="./prints/diagrama-original.png">
+</p>
 
 Ao todo o dataset possui 28 colunas, elas são:
 
@@ -44,8 +46,8 @@ Ao todo o dataset possui 28 colunas, elas são:
 - **Time_OCC**: horário que o crime aconteceu;
 - **Area**: id da área do crime; 
 - **Area_Name**: nome da área do crime;
-- **Rpt_Dist_No**: da pra deletar;
-- **Part_1-2**: da pra deletar;
+- **Rpt_Dist_No**: número do distrito que o crime foi reportado;
+- **Part_1-2**: não tem informações sobre o que se trata no dataset original;
 - **Crm_Cd**: código do crime;
 - **Crm_Desc**: descrição do crime;
 - **Mocodes**: atividades associadas a quem cometeu o crime;
@@ -330,7 +332,7 @@ Como podemos ver na print abaixo o mês com a maior quantidade de crimes reporta
 </p>
 
 ### Quais foram os meses com a maior quantidade de crimes de cada ano? E os menores?
-Para conseguir o resultado esperado foi criada uma CTE com a contagem de crimes agrupada por ano e mês e esses dados foram usados para criar um rank dos meses com a função RANK particionando o resultado por ano, podemos ver a solução na imagem abaixo
+Para conseguir o resultado esperado foi criada uma CTE com a contagem de crimes agrupada por ano e mês e esses dados foram usgados para criar um rank dos meses com a função RANK particionando o resultado por ano, podemos ver a solução na imagem abaixo
 
 <p align="center">
   <img src="./prints/resposta-7-query.png">

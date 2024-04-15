@@ -14,7 +14,7 @@ Além disso, outro objetivo importante deste projeto é responder as seguintes p
 - Qual é a divisão de vítimas por faixa etária?
 - Qual a arma mais comum de ser usada em crimes?
 - Qual foi a área com a maior quantidade de crimes de 2020 até março de 2024?
-- Qual é o perfil de vítma que é mais afetado pelos crimes?
+- Qual é o perfil de vítima que é mais afetado pelos crimes?
 - Qual foi o mês com a maior quantidade de crimes reportados?
 - Quais foram os meses com a maior quantidade de crimes de cada ano? E os menores?
 - Qual o tipo de crime mais comum? E o menos comum?
@@ -67,7 +67,13 @@ Ao todo o dataset possui 28 colunas, elas são:
 Também fazemos uso da descrição dos códigos descritos no campo "Mocodes" que podem ser obtidos no site https://data.lacity.org/. Os códigos serão disponibilizados com o nome MO_CODES-MO_CODES_Numerical_20191119.csv na pasta "scripts-database" do projeto para facilitar o uso, porém, o csv do dataset deverá ser baixado diretamente do Kaggle por causa do seu tamanho.
 
 ## Extração de Dados
-A extração de dados é feita através de uma conexão JDBC com o banco de dados. O intuito de fazer a extração diretamente do banco de dados ao invés de um arquivo CSV comum é o de simular um banco de dados transacional como temos em situações reais.
+A extração de dados é feita através de uma conexão JDBC com o banco de dados, o ip do banco pode ser encontrado na rede do cluster spark. Ao todo são feitas duas conexões, uma para extrair a tabela de crimes e outra para extrair a tabela com a descrição do modus operandi ou "mocodes".
+
+<p align="center">
+  <img src="./prints/extracao-dados.png">
+</p>
+
+O intuito de fazer a extração diretamente do banco de dados ao invés de um arquivo CSV como o dataset é disponibilizado é o de simular uma situação real em que é necessário fazer a extração do banco de dados transacional de uma empresa.
 
 ## Limpeza e Transformação de Dados
 Vários processos de limpeza e transformação de dados foram aplicados na pipeline de dados, abaixo vou explicar em detalhes como cada um dos campos do dataset original foi tratado. Abaixo também temos um diagrama demonstrando como ficou o dataset após o processo.
@@ -75,49 +81,109 @@ Vários processos de limpeza e transformação de dados foram aplicados na pipel
 ![dataset-img](./prints/datawarehouse-diagram-new.png)
 
 ### Campos de Data
-Os campos de data Date_Rpt foi tratado transformando-o de um campo no formato de MM/DD/YYYY HH:MM:SS para o formato YYYY-MM-DD, o descarte dos dados relacionados ao horário que o crime foi reportado se deve ao fato de que como não existe nenhum outro campo que consiga nos fornecer esses dados no dataset.
+Os campos de data Date_Rpt foi tratado transformando-o de um campo no formato de MM/DD/YYYY HH:MM:SS para o formato YYYY-MM-DD, o descarte dos dados relacionados ao horário que o crime foi reportado se deve ao fato de que como não existe nenhum outro campo que consiga nos fornecer os dados necessários.
 
 Já os campos Date_OCC e Time_OCC foram unidos em um único campo chamado DateTime_OCC onde removemos os valores errados de tempo que existia anteriormente e combinamos com o valores de Time_OCC, formando assim uma única coluna com valores Datetime corretos.
 
+<p align="center">
+  <img src="./prints/limpeza_1.png">
+</p>
+
 ### Campos de Área
-Nos campos relacionados à área que o crime ocorreu temos as colunas Area e Area_Name do dataset original, em especial a coluna Area_Name possui diversos valores duplicados pelo dataframe inteiro, por isso, esses dados foram transferidos para um novo dataframe onde cada valor da coluna será registrado apenas uma vez e seu acesso será feito através de relacionamentos usando o campo Area que tem o papel de um identificador único, diminuindo assim a quantidade de dados duplicados no dataset.
+Nos campos relacionados a área em que o crime ocorreu temos as colunas Area e Area_Name do dataset original, em especial a coluna Area_Name possui diversos valores duplicados pelo dataframe inteiro, por isso, esses dados foram transferidos para um novo dataframe onde cada valor da coluna será registrado apenas uma vez e seu acesso será feito através de relacionamentos usando o campo Area que tem o papel de um identificador único, diminuindo assim a quantidade de dados duplicados no dataset.
+
+<p align="center">
+  <img src="./prints/limpeza_2.png">
+</p>
 
 ### Campos de Descrições de Crimes
 Com os campos de crimes a abordagem adotada foi a mesma dos campos de área, foi criado um novo dataframe com valores distintos de descrição de crimes, diminuindo assim, a quantidade de dados duplicados. A coluna Crmd_Cd funciona como um identificador único para cada descrição de crime.
 
 Além disso, foi criado também outro dataframe que vai armazenar os códigos de todos os crimes cometidos, sejam eles o mais grave (Crmd_Cd) ou os mais leves (Crmd_Cd_2-4) para que sejam relacionandos com as suas respectivas descrições em uma futura análise. A coluna Crmd_Cd_1 foi descartada por ser apenas uma réplica dos valores na coluna Crmd_Cd. 
 
+<p align="center">
+  <img src="./prints/limpeza_3.png">
+</p>
+
 ### Campos de Vítimas
 Existem três colunas que armazenam dados das vítimas, elas são: Vict_Age, Vict_Sex, Vict_Descent. Primeiro os valores nulos de Vict_Sex e Vict_Descent foram preenchidos com o valor 'X' que demonstra que o valor original do dado é desconhecido. Também foram substituidos valores que não correspondiam a nenhum valor conhecido por 'X' como por exemplo o valor '-' em ambas colunas.
 
+<p align="center">
+  <img src="./prints/limpeza_4.png">
+</p>
+
 Também foi criado um dataframe para armazenar a descrição de cada uma das descendências, utilizando o valor presente no dataset de vítimas como identificador e as descrições forecidas na página do dataset no Kaggle, tornando possível uma análise mais detalhada no futuro utilizando esse relacionamento.
+
+<p align="center">
+  <img src="./prints/limpeza_4-2.png">
+</p>
 
 ### Campos de Modus Operandi
 O campo Mocodes do dataset original é um string que possui até 10 códigos de modus operandi do suspeito, cada um deles separado por um espaço em branco. A transformação aplicada nesse campo foi dividi-lo em 10 colunas, uma para cada código. Esses códigos podem ser relacionados com suas respectivas descrições que estão em outro dataframe que pode ser visto no diagrama apresentado anteriormente.
+
+<p align="center">
+  <img src="./prints/limpeza_5.png">
+</p>
 
 ### Campos de Premisses
 Nos campos de premisses preenchemos os valores nulos na coluna Premis_Cd por 0 e Premis_Desc por 'Unknown'. Além disso, também existem dados em que existe um código associado porém não existe uma descrição, nesses casos foi alterado o valor de Premis_Cd para 0 também.
 
 Depois de ser feito a limpeza os dados são levados para um novo dataframe mas considerando apenas valores distintos, evitando assim, duplicidade de dados no resultado final.
 
+<p align="center">
+  <img src="./prints/limpeza_6.png">
+</p>
+
 ### Campos de Armas
 Nos campos de armas são selecionadas todas as armas distintas e levadas a um dataframe separado onde vão ser armazenadas a sua descrição. Com isso é possível criar um relacionamento entre o dataframe de crimes e o dataframe de armas através do valor do código de cada arma além de evitar a duplicidade de dados.
+
+<p align="center">
+  <img src="./prints/limpeza_7.png">
+</p>
 
 ### Campos de Status
 Ao todo no dataframe existem seis status possíveis, por isso os valores distintos são levados para um dataframe separado onde vai existir um relacionamento através do id, evitando assim, a duplicidade de dados.
 
+<p align="center">
+  <img src="./prints/limpeza_8.png">
+</p>
+
 ### Campos de localização
 Como existem diversas colunas com dados relacionados ao local do crime os dados foram divididos em dois dataframes. Um deles vai conter um id associado a localização e sua descrição, o id foi gerado utilizando a função monotonically_increasing_id() do pyspark pois não existia nada do tipo no dataset original. A intenção por trás disso é de reduzir a duplicidade de dados pois existe uma quantidade muito menor de localizações únicas do que a quantidade de crimes.
 
-O outro dataframe que foi criado é o que vai armazenar as outras colunas relacionadas como: id da área, id da localização, Cross_Street, Premis_Cd, latitude e longitude. Dessas colunas é feito uma limpeza nos valores nulos de latitude e longitude, os valores nulos são substituidos pela média dos valores de outros crimes que ocorreram na mesma localização cujo valor não é zero. Em alguns casos não existe informação o suficiente para tentar aproximar os valores, nesses casos foi decidido que o valor continuaria a ser 0.
+O outro dataframe que foi criado é o que vai armazenar as outras colunas relacionadas como: id da área, id da localização, Cross_Street, Premis_Cd, latitude e longitude. Dessas colunas é feito uma limpeza nos valores nulos de latitude e longitude, os valores nulos são substituidos pela média dos valores de outros crimes que ocorreram na mesma localização cujo valor não é zero. Em alguns casos não existe informação o suficiente para tentar aproximar os valores, nesses casos foi decidido que o valor continuaria a ser 0. Também foi usado coalesce que é uma função do pyspark para mudar a quantidade de partições no arquivo resultante do pyspark para facilitar a importação para o BigQuery.
+
+<p align="center">
+  <img src="./prints/limpeza_9.png">
+</p>
 
 ### Campos Desnecessários
-Existem alguns campos que não apresentam nenhuma informação relevante para análise, os campos são: Rpt_Dist_No e Part_1_2. Esses campos foram descartados.
+Existem alguns campos que não apresentam nenhuma informação relevante para análise, os campos são: Rpt_Dist_No e Part_1_2. Esses campos foram descartados. Além disso, os dados que foram migrados para outros dataframes também são migrados.
+
+<p align="center">
+  <img src="./prints/limpeza_10.png">
+</p>
 
 ## Carga de Dados
 Após os dados serem processados pelo cluster spark eles são carregados para um bucket no GCP com o nome de 'bucket-dw-modeling-pedro', caso você tente reproduzir o projeto será necessário mudar o nome no arquivo main.tf da pasta IAC para um bucket criado na sua conta.
 
-O upload é feito através do recurso do terraform chamado google_storage_bucket_object, após isso o dataset e as tabelas do BigQuery são criadas usando os recursos google_bigquery_dataset e google_bigquery_table, e por fim, os dados são carregados para dentro do BigQuery através de jobs que são criados com o recurso google_bigquery_job.
+O upload é feito através do recurso do terraform chamado google_storage_bucket_object, é percorrido todos os caminhos do arquivo que estão presentes no arquivo files.txt que é um arquivo com o nome de todos os arquivos de saída pelo spark.
+
+<p align="center">
+  <img src="./prints/carga_1.png">
+</p>
+
+Após isso o dataset e as tabelas do BigQuery são criadas usando os recursos google_bigquery_dataset e google_bigquery_table
+
+<p align="center">
+  <img src="./prints/carga_2.png">
+</p>
+
+E por fim, os dados são carregados para dentro do BigQuery através de jobs que são criados com o recurso google_bigquery_job.
+
+<p align="center">
+  <img src="./prints/carga_3.png">
+</p>
 
 ## Como Usar
 
@@ -233,7 +299,7 @@ Na imagem abaixo podemos ver que a área "Central" é a que ocorre a maior quant
   <img src="./prints/resposta-4.png">
 </p>
 
-### Qual é o perfil de vítma que é mais afetado pelos crimes?
+### Qual é o perfil de vítima que é mais afetado pelos crimes?
 Para descobrirmos o perfil da vítima vamos precisar de informações como sexo, descendência e quantiade de crimes. Para isso vamos usar as tabelas Crimes_la, Victims e Victims_Descent fazendo uma contagem de todos os crimes que aconteceram agrupando pelas colunas de sexo e descendência e filtrando casos em que os dados são desconhecidos, a query usada pode ser vista abaixo:
 
 <p align="center">
@@ -309,3 +375,5 @@ A média móvel de crimes em todos os dias do mês de novembro de 2021 pode ser 
 <p align="center">
   <img src="./prints/resposta-9.png">
 </p>
+
+## Conclusão

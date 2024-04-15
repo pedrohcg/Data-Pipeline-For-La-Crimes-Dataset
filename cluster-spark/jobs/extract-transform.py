@@ -41,22 +41,14 @@ df_date = df_date.withColumn('Date_Rptd', to_date(split(regexp_replace('Date_Rpt
 
 df_date = df_date.drop('Date_OCC', 'Time_OCC', 'Time_OCC_hour', 'Time_OCC_minute')
 
-df_date.show()
-
 # creates a new dataframe with area data
 df_area = df.select('Area', 'Area_Name').distinct()
-
-df_area.show()
 
 # creates a new dataframe with only the id and description of a crime
 df_crimes = df.select('Crm_Cd', 'Crm_Cd_Desc').distinct()
 
-df_crimes.show()
-
 # creates a new dataframe with all the crime codes from an occurence
 df_crimes_list = df.select('DR_NO', 'Crm_Cd', 'Crm_Cd_2', 'Crm_Cd_3', 'Crm_Cd_4')
-
-df_crimes_list.show()
 
 # creates a new dataframe with victims data
 df_victims = df.select('DR_NO', 'Vict_Age', 'Vict_Sex', 'Vict_Descent')
@@ -65,8 +57,6 @@ df_victims = df.select('DR_NO', 'Vict_Age', 'Vict_Sex', 'Vict_Descent')
 df_victims = df_victims.fillna({'Vict_Sex': 'X', 'Vict_Descent': 'X'})
 df_victims = df_victims.na.replace(['-', 'H'], 'X', 'Vict_Sex')
 df_victims = df_victims.na.replace('-', 'X', 'Vict_Descent')
-
-df_victims.show()
 
 # creates a new dataframe and breaks the array that stores all other codes of crimes of the suspect
 df_mocodes_crimes = df.select('DR_NO', split(col('Mocodes'), ' ').getItem(0).alias('Mocode1'),
@@ -80,8 +70,6 @@ df_mocodes_crimes = df.select('DR_NO', split(col('Mocodes'), ' ').getItem(0).ali
                                        split(col('Mocodes'), ' ').getItem(8).alias('Mocode9'),
                                        split(col('Mocodes'), ' ').getItem(9).alias('Mocode10'),
 )
-
-df_mocodes_crimes.show()
 
 # creates a new dataframe with descent description
 df_descent = df_victims.select('Vict_Descent').distinct()
@@ -106,8 +94,6 @@ df_descent = df_descent.withColumn('Descent_Desc', when(df_descent.Vict_Descent 
                                                    .when(df_descent.Vict_Descent == "Z", "Asian Indian")
 )
 
-df_descent.show()
-
 #cleans premis data
 df = df.fillna({'Premis_Cd': 0, 'Premis_Desc': 'Unknown'})
 df = df.withColumn('Premis_Cd' , when(df.Premis_Desc == 'Unknown', 0)
@@ -117,8 +103,6 @@ df = df.withColumn('Premis_Cd' , when(df.Premis_Desc == 'Unknown', 0)
 # creates a new dataframe with premis data
 df_premis = df.select('Premis_Cd', 'Premis_Desc').distinct()
 
-df_premis.show()
-
 # creates a new dataframe with weapon data
 df_weapons = df.select('Weapon_Used_Cd', 'Weapon_Desc').distinct()
 
@@ -126,12 +110,8 @@ df_weapons = df.select('Weapon_Used_Cd', 'Weapon_Desc').distinct()
 df_weapons = df_weapons.fillna({'Weapon_Used_Cd': 500, 'Weapon_Desc': 'UNKNOWN WEAPON/OTHER WEAPON'})
 df = df.fillna({'Weapon_Used_Cd': 500})
 
-df_weapons.show()
-
 # creates a new dataframe with status data
 df_status = df.select('Status', 'Status_Desc').distinct()
-
-df_status.show()
 
 # creates a new dataframe for all distinct locations giving it an ID and its description
 df_location_desc = df.select('Location').distinct()
@@ -141,8 +121,6 @@ df_location_desc = df_location_desc.withColumn('id', monotonically_increasing_id
 
 # Changes the order of the columns
 df_location_desc = df_location_desc.select('id', 'Location')
-
-df_location_desc.show()
 
 df.createOrReplaceTempView("location_temp")
 df_location_desc.createOrReplaceTempView("location_desc_temp")
@@ -164,15 +142,10 @@ df_location = spark.sql("""
 # changes the number of partitions of the dataframe to 1
 df_location = df_location.coalesce(1)
 
-df_location.show()
-
 
 # Drop columns from original dataframe
 df = df.drop('Date_Rptd', 'Rpt_Dist_No', 'Part_1_2', 'Date_OCC', 'Time_OCC', 'Area', 'Area_Name', 'Crm_Cd', 'Crm_Cd_Desc', 'Mocodes', 'Vict_Age', 'Vict_Sex', 'Vict_Descent',
              'Premis_Cd', 'Premis_Desc', 'Weapon_Desc', 'Status_Desc', 'Crm_Cd_1', 'Crm_Cd_2', 'Crm_Cd_3', 'Crm_Cd_4', 'Location', 'Cross_Street', 'LAT', 'LON')
-
-df.show()
-df2.show()
 
 # write the files on hadoop
 df.write.mode('overwrite').option("header", "true").csv('transformed_data/crimes_la')

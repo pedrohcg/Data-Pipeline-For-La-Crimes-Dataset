@@ -190,7 +190,9 @@ Para conseguir a resposta dessa pergunta a solução adotada foi utilizar uma su
 
 O resultado da query é que temos 10% de crimes que usaram armas de fogo ou armas brancas.
 
-![resp-1-img](./prints/resposta-1.png)
+<p align="center">
+  <img src="./prints/resposta-1.png">
+</p>
 
 ### Qual é a divisão de vítimas por faixa etária?
 Para descobrir a divisão de vítimas pela sua faixa etária foi feito um SELECT usando a função CASE, foram definidos intervalos de idade e comparados com as idades das vítimas agrupando-as e contando o valor total de cada intervalo. Os intervalos são de 10 anos, com execção do 70+ que agrupa todas as vítimas com mais de 70 anos. A query usada para chegar no resultado pode ser vista na imagem abaixo:
